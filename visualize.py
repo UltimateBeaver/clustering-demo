@@ -93,6 +93,7 @@ def main():
     parser.add_argument('clusters', help='location of file that contains a list of clusters. Each number in the cluster corresponds to a row in the features.')
     parser.add_argument('source', help='location of folder that contains the source code of points to be plotted')
     parser.add_argument('index', help='location of file that maps index in the feature/cluster file to name of source code. As of now, file names here should not include the .rb at the end')
+    parser.add_argument('flog', help='location of file that contains flog value')
     parser.add_argument('-t', '--tsne', action='store_true', help='include this option to visualize the clusters using tsne')
     parser.add_argument('-i', '--individual-plots', action='store_true', help='include this option to plot each cluster individually in addition to all clusters together')
     parser.add_argument('-d', '--distance-matrix', action='store_true', help='include this option if data is a distance matrix, instead of features. This option should only be included if plotting with tsne')
@@ -101,6 +102,7 @@ def main():
     clusters = np.loadtxt(args.clusters).astype(int)
     source_dir = args.source
     index = np.loadtxt(args.index).astype(int)
+    flog_feature = np.loadtxt(args.flog)
     use_tsne = args.tsne
     use_individual_plots = args.individual_plots
     is_distance_matrix = args.distance_matrix
@@ -109,6 +111,7 @@ def main():
     sorted_data = data[sort_order, :]
     sorted_clusters = clusters[sort_order]
     sorted_index = index[sort_order]
+    sorted_flog_feature = flog_feature[sort_order]
 
     if is_distance_matrix:
         if use_tsne:
@@ -121,9 +124,11 @@ def main():
             plotting_data = calc_tsne(sorted_data, PERPLEX=30)
             sorted_index.shape = (799, 1)
             sorted_clusters.shape = (799, 1)
+            sorted_flog_feature.shape = (799, 1)
             csv_output_data = np.concatenate((plotting_data, sorted_index), axis=1) 
             csv_output_data = np.concatenate((csv_output_data, sorted_clusters), axis=1)
-            np.savetxt("coordinates.csv", csv_output_data, fmt='%.2f', delimiter=',', header='xaxis,yaxis,filename,cluster')
+            csv_output_data = np.concatenate((csv_output_data, sorted_flog_feature), axis=1)
+            np.savetxt("coordinates.csv", csv_output_data, fmt='%.2f', delimiter=',', header='xaxis,yaxis,filename,cluster,flog')
         else:
             plotting_data = sorted_data
 
